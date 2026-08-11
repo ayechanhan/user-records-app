@@ -4,11 +4,11 @@ Ordered checklist — each item is meant to be roughly one focused work session.
 
 ## Phase 0 — Scaffolding
 
-- [ ] Repo structure (`backend/`, `frontend/`), `.gitignore`
-- [ ] Go module + Gin boilerplate, config/env loading
-- [ ] Next.js app init (TypeScript, App Router, Tailwind)
-- [ ] `docker-compose.yml` for local Postgres + Mongo
-- [ ] `.env.example`
+- [x] Repo structure (`backend/`, `frontend/`), `.gitignore`
+- [x] Go module + Gin boilerplate, config/env loading
+- [x] Next.js app init (TypeScript, App Router, Tailwind)
+- [x] `docker-compose.yml` for local Postgres + Mongo
+- [x] `.env.example`
 
 ## Phase 1 — Data layer
 

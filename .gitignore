@@ -1,0 +1,31 @@
+# Env
+.env
+.env.local
+*.env
+!.env.example
+
+# Go
+backend/tmp/
+*.exe
+*.test
+*.out
+
+# Node / Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.env*.local
+frontend/next-env.d.ts
+
+# Editors / OS
+.DS_Store
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Docker
+docker-data/
