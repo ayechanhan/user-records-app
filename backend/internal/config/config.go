@@ -20,6 +20,8 @@ type Config struct {
 	HMACSecret    string
 	AdminEmail    string
 	AdminPassword string
+
+	FrontendOrigin string
 }
 
 // Load reads a .env file if present (dev convenience) and builds a Config
@@ -36,6 +38,8 @@ func Load() (*Config, error) {
 		HMACSecret:    os.Getenv("HMAC_SECRET"),
 		AdminEmail:    os.Getenv("ADMIN_EMAIL"),
 		AdminPassword: os.Getenv("ADMIN_PASSWORD"),
+
+		FrontendOrigin: getEnv("FRONTEND_ORIGIN", "http://localhost:3000"),
 	}
 
 	required := map[string]string{

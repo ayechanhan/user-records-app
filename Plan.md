@@ -35,6 +35,8 @@ The handler returns as soon as the Postgres write succeeds. The log event is enq
 | Method | Path                   | Auth       | Purpose                                        |
 | ------ | ---------------------- | ---------- | ---------------------------------------------- |
 | POST   | /api/v1/auth/login     | —          | Admin or User login                            |
+| GET    | /api/v1/auth/me        | required   | Current identity from the session JWT (added Phase 5 — the frontend needs a cookie-based way to check auth state server-side without touching the token) |
+| POST   | /api/v1/auth/logout    | —          | Clears the session cookie (added Phase 5)      |
 | GET    | /api/v1/users          | required   | Paginated list                                 |
 | POST   | /api/v1/users          | Admin only | Create user                                    |
 | GET    | /api/v1/users/:id      | required   | Fetch one                                      |

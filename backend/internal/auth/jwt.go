@@ -21,19 +21,23 @@ const (
 )
 
 // Claims identifies the authenticated principal. UserID is the literal string
-// "admin" for the config-based Admin identity, or a Users.id for a User.
+// "admin" for the config-based Admin identity, or a Users.id for a User. Name
+// is carried in the token (not just looked up from the DB) so GET /auth/me
+// can answer from the cookie alone.
 type Claims struct {
 	UserID string `json:"user_id"`
+	Name   string `json:"name"`
 	Email  string `json:"email"`
 	Role   Role   `json:"role"`
 	jwt.RegisteredClaims
 }
 
 // IssueToken signs a session JWT for the given identity.
-func IssueToken(secret, userID, email string, role Role) (string, error) {
+func IssueToken(secret, userID, name, email string, role Role) (string, error) {
 	now := time.Now()
 	claims := Claims{
 		UserID: userID,
+		Name:   name,
 		Email:  email,
 		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{

@@ -64,7 +64,7 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (*Login
 			s.events.Emit("admin", model.EventUserLoginFailed, map[string]any{"email": email})
 			return nil, ErrInvalidCredentials
 		}
-		token, err := auth.IssueToken(s.jwtSecret, "admin", email, auth.RoleAdmin)
+		token, err := auth.IssueToken(s.jwtSecret, "admin", "Admin", email, auth.RoleAdmin)
 		if err != nil {
 			return nil, fmt.Errorf("service: issue admin token: %w", err)
 		}
@@ -86,7 +86,7 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (*Login
 		return nil, ErrInvalidCredentials
 	}
 
-	token, err := auth.IssueToken(s.jwtSecret, u.ID.String(), u.Email, auth.RoleUser)
+	token, err := auth.IssueToken(s.jwtSecret, u.ID.String(), u.Name, u.Email, auth.RoleUser)
 	if err != nil {
 		return nil, fmt.Errorf("service: issue user token: %w", err)
 	}

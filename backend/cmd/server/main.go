@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
 	"github.com/ayechanhan/user-records-app/backend/internal/config"
@@ -51,6 +52,12 @@ func main() {
 	userHandler := handler.NewUserHandler(userService)
 
 	router := gin.Default()
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{cfg.FrontendOrigin},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Content-Type"},
+		AllowCredentials: true,
+	}))
 
 	router.GET("/healthz", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})
@@ -58,6 +65,8 @@ func main() {
 
 	v1 := router.Group("/api/v1")
 	v1.POST("/auth/login", authHandler.Login)
+	v1.POST("/auth/logout", authHandler.Logout)
+	v1.GET("/auth/me", middleware.RequireAuth(cfg.JWTSecret), authHandler.Me)
 
 	users := v1.Group("/users")
 	users.Use(middleware.RequireAuth(cfg.JWTSecret))

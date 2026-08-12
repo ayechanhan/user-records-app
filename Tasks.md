@@ -42,8 +42,8 @@ Ordered checklist — each item is meant to be roughly one focused work session.
 
 ## Phase 5 — Frontend auth
 
-- [ ] Login page
-- [ ] Auth state (httpOnly cookie–based) + protected route wrapper
+- [x] Login page
+- [x] Auth state (httpOnly cookie–based) + protected route wrapper
 
 ## Phase 6 — Frontend user management
 

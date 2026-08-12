@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/ayechanhan/user-records-app/backend/internal/auth"
+	"github.com/ayechanhan/user-records-app/backend/internal/middleware"
 	"github.com/ayechanhan/user-records-app/backend/internal/service"
 )
 
@@ -24,7 +25,7 @@ type loginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
-type loginResponse struct {
+type identityResponse struct {
 	ID    string `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
@@ -54,10 +55,36 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(auth.CookieName, result.Token, int(auth.TokenTTL.Seconds()), "/", "", secure, true)
 
-	c.JSON(http.StatusOK, loginResponse{
+	c.JSON(http.StatusOK, identityResponse{
 		ID:    result.ID,
 		Name:  result.Name,
 		Email: result.Email,
 		Role:  string(result.Role),
 	})
+}
+
+// Me returns the identity carried in the session cookie's JWT claims, so the
+// frontend can determine auth state server-side without ever touching the
+// token itself. Requires RequireAuth to have run first.
+func (h *AuthHandler) Me(c *gin.Context) {
+	claims, ok := middleware.ClaimsFromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	c.JSON(http.StatusOK, identityResponse{
+		ID:    claims.UserID,
+		Name:  claims.Name,
+		Email: claims.Email,
+		Role:  string(claims.Role),
+	})
+}
+
+// Logout clears the session cookie. JWTs are stateless, so there is nothing
+// to invalidate server-side — clearing the cookie is sufficient.
+func (h *AuthHandler) Logout(c *gin.Context) {
+	secure := gin.Mode() == gin.ReleaseMode
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie(auth.CookieName, "", -1, "/", "", secure, true)
+	c.Status(http.StatusNoContent)
 }
