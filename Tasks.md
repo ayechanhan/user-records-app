@@ -47,11 +47,11 @@ Ordered checklist — each item is meant to be roughly one focused work session.
 
 ## Phase 6 — Frontend user management
 
-- [ ] User list — data table (TanStack Table), pagination
-- [ ] Create user form/modal
-- [ ] Edit user form/modal
-- [ ] Delete confirmation
-- [ ] Loading / error states
+- [x] User list — data table (TanStack Table), pagination
+- [x] Create user form/modal
+- [x] Edit user form/modal
+- [x] Delete confirmation
+- [x] Loading / error states
 
 ## Phase 7 — Testing pass
 

@@ -18,7 +18,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await api.login(email, password);
-      router.push("/dashboard");
+      router.push("/users");
       router.refresh();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");

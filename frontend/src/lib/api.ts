@@ -9,6 +9,33 @@ export type Identity = {
   role: Role;
 };
 
+export type UserRecord = {
+  id: string;
+  name: string;
+  email: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type UserListResponse = {
+  users: UserRecord[];
+  total: number;
+  page: number;
+  page_size: number;
+};
+
+export type CreateUserInput = {
+  name: string;
+  email: string;
+  password: string;
+};
+
+export type UpdateUserInput = {
+  name: string;
+  email: string;
+  password?: string;
+};
+
 export class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {
@@ -42,4 +69,11 @@ export const api = {
     }),
   logout: () => request<void>("/auth/logout", { method: "POST" }),
   me: () => request<Identity>("/auth/me"),
+  listUsers: (page: number, pageSize: number) =>
+    request<UserListResponse>(`/users?page=${page}&page_size=${pageSize}`),
+  createUser: (input: CreateUserInput) =>
+    request<UserRecord>("/users", { method: "POST", body: JSON.stringify(input) }),
+  updateUser: (id: string, input: UpdateUserInput) =>
+    request<UserRecord>(`/users/${id}`, { method: "PUT", body: JSON.stringify(input) }),
+  deleteUser: (id: string) => request<void>(`/users/${id}`, { method: "DELETE" }),
 };
