@@ -17,6 +17,7 @@ frontend/out/
 frontend/build/
 frontend/.env*.local
 frontend/next-env.d.ts
+frontend/coverage/
 
 # Editors / OS
 .DS_Store

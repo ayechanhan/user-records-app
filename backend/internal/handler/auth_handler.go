@@ -2,6 +2,7 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"net/http"
 
@@ -12,11 +13,17 @@ import (
 	"github.com/ayechanhan/user-records-app/backend/internal/service"
 )
 
-type AuthHandler struct {
-	authService *service.AuthService
+// authService is the seam AuthHandler depends on instead of the concrete
+// *service.AuthService, so tests can supply a lightweight mock.
+type authService interface {
+	Login(ctx context.Context, email, password string) (*service.LoginResult, error)
 }
 
-func NewAuthHandler(s *service.AuthService) *AuthHandler {
+type AuthHandler struct {
+	authService authService
+}
+
+func NewAuthHandler(s authService) *AuthHandler {
 	return &AuthHandler{authService: s}
 }
 

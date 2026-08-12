@@ -24,8 +24,6 @@ Rules for any AI assistant (Claude Code or otherwise) working in this repo. Clau
 - Frontend tests: `npm test`
 - Local infra: `docker compose up -d`
 
-_(update this section once scaffolding lands — these are the intended commands, not yet verified)_
-
 ## Conventions
 
 - Go: `cmd/` + `internal/` layout, table-driven tests, errors wrapped with `fmt.Errorf("...: %w", err)`.

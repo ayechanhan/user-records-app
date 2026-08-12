@@ -55,8 +55,8 @@ Ordered checklist — each item is meant to be roughly one focused work session.
 
 ## Phase 7 — Testing pass
 
-- [ ] Backend coverage across auth, CRUD, async logging
-- [ ] Frontend component tests: login form, user table, create/edit forms
+- [x] Backend coverage across auth, CRUD, async logging
+- [x] Frontend component tests: login form, user table, create/edit forms
 
 ## Phase 8 — Optional / stretch
 
