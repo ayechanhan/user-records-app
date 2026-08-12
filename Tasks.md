@@ -18,11 +18,11 @@ Ordered checklist — each item is meant to be roughly one focused work session.
 
 ## Phase 2 — Auth
 
-- [ ] Admin credentials from env/config
-- [ ] Password hashing + `hmac.Equal` comparison utility
-- [ ] `POST /auth/login`
-- [ ] JWT issuing + auth middleware
-- [ ] Unit tests: hash/compare correctness, login success/failure/unknown-email paths
+- [x] Admin credentials from env/config
+- [x] Password hashing + `hmac.Equal` comparison utility
+- [x] `POST /auth/login`
+- [x] JWT issuing + auth middleware
+- [x] Unit tests: hash/compare correctness, login success/failure/unknown-email paths
 
 ## Phase 3 — Async logging mechanism
 

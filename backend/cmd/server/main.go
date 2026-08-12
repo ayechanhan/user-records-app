@@ -7,8 +7,10 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/ayechanhan/user-records-app/backend/internal/config"
-	mongorepo "github.com/ayechanhan/user-records-app/backend/internal/repository/mongo"
+	"github.com/ayechanhan/user-records-app/backend/internal/handler"
+	"github.com/ayechanhan/user-records-app/backend/internal/repository/mongo"
 	"github.com/ayechanhan/user-records-app/backend/internal/repository/postgres"
+	"github.com/ayechanhan/user-records-app/backend/internal/service"
 )
 
 func main() {
@@ -20,24 +22,32 @@ func main() {
 	if err := postgres.Migrate(cfg.PostgresDSN); err != nil {
 		log.Fatalf("postgres migrate: %v", err)
 	}
-	if _, err := postgres.Connect(cfg.PostgresDSN); err != nil {
+	db, err := postgres.Connect(cfg.PostgresDSN)
+	if err != nil {
 		log.Fatalf("postgres connect: %v", err)
 	}
+	userRepo := postgres.NewUserRepository(db)
 
 	ctx := context.Background()
-	mongoClient, err := mongorepo.Connect(ctx, cfg.MongoURI)
+	mongoClient, err := mongo.Connect(ctx, cfg.MongoURI)
 	if err != nil {
 		log.Fatalf("mongo connect: %v", err)
 	}
-	if err := mongorepo.EnsureIndexes(ctx, mongoClient, cfg.MongoDBName); err != nil {
+	if err := mongo.EnsureIndexes(ctx, mongoClient, cfg.MongoDBName); err != nil {
 		log.Fatalf("mongo ensure indexes: %v", err)
 	}
+
+	authService := service.NewAuthService(userRepo, cfg.HMACSecret, cfg.JWTSecret, cfg.AdminEmail, cfg.AdminPassword)
+	authHandler := handler.NewAuthHandler(authService)
 
 	router := gin.Default()
 
 	router.GET("/healthz", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})
 	})
+
+	v1 := router.Group("/api/v1")
+	v1.POST("/auth/login", authHandler.Login)
 
 	log.Printf("listening on :%s", cfg.Port)
 	if err := router.Run(":" + cfg.Port); err != nil {
