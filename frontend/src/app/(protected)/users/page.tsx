@@ -9,6 +9,7 @@ import { api, ApiError, type UserRecord } from "@/lib/api";
 import { useSession } from "../session-provider";
 import { UserFormModal } from "./user-form-modal";
 import { DeleteConfirmDialog } from "./delete-confirm-dialog";
+import { LogViewerModal } from "./log-viewer-modal";
 
 const features = tableFeatures({});
 const columnHelper = createColumnHelper<typeof features, UserRecord>();
@@ -34,6 +35,7 @@ export default function UsersPage() {
   const [creating, setCreating] = useState(false);
   const [editingUser, setEditingUser] = useState<UserRecord | null>(null);
   const [deletingUser, setDeletingUser] = useState<UserRecord | null>(null);
+  const [viewingLogsFor, setViewingLogsFor] = useState<UserRecord | null>(null);
 
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -103,6 +105,13 @@ export default function UsersPage() {
                       className="text-sm font-medium text-red-600 hover:underline"
                     >
                       Delete
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setViewingLogsFor(row.original)}
+                      className="text-sm font-medium text-gray-700 hover:underline dark:text-gray-300"
+                    >
+                      Logs
                     </button>
                   </div>
                 ),
@@ -237,6 +246,7 @@ export default function UsersPage() {
           onSuccess={handleMutationSuccess}
         />
       )}
+      {viewingLogsFor && <LogViewerModal user={viewingLogsFor} onClose={() => setViewingLogsFor(null)} />}
     </main>
   );
 }

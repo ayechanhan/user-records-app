@@ -30,6 +30,10 @@ func (m *mockLogRepo) Create(ctx context.Context, entry *model.UserLog) error {
 	return nil
 }
 
+func (m *mockLogRepo) ListByUserID(ctx context.Context, userID string, limit, offset int) ([]model.UserLog, int64, error) {
+	return nil, 0, nil
+}
+
 func TestBus_Emit_NonBlockingWhenFull(t *testing.T) {
 	bus := NewBus(1)
 	bus.Emit("u1", model.EventUserCreated, nil)

@@ -31,4 +31,9 @@ type UserRepository interface {
 // LogRepository is the data-access contract for the UserLogs document store.
 type LogRepository interface {
 	Create(ctx context.Context, log *model.UserLog) error
+	// ListByUserID returns a page of a user's log history, newest first. It
+	// intentionally does not check whether the user currently exists — soft
+	// deletion means historical logs should stay queryable after the user
+	// that produced them is gone (see spec.md Assumptions).
+	ListByUserID(ctx context.Context, userID string, limit, offset int) ([]model.UserLog, int64, error)
 }

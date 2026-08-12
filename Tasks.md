@@ -60,7 +60,7 @@ Ordered checklist — each item is meant to be roughly one focused work session.
 
 ## Phase 8 — Optional / stretch
 
-- [ ] `GET /users/:id/logs` read endpoint, simple log viewer in the UI
+- [x] `GET /users/:id/logs` read endpoint, simple log viewer in the UI
 
 ## Phase 9 — Wrap-up
 

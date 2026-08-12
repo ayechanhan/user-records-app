@@ -36,6 +36,20 @@ export type UpdateUserInput = {
   password?: string;
 };
 
+export type UserLog = {
+  user_id: string;
+  event: string;
+  data: Record<string, unknown> | null;
+  created_at: string;
+};
+
+export type UserLogListResponse = {
+  logs: UserLog[];
+  total: number;
+  page: number;
+  page_size: number;
+};
+
 export class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {
@@ -76,4 +90,6 @@ export const api = {
   updateUser: (id: string, input: UpdateUserInput) =>
     request<UserRecord>(`/users/${id}`, { method: "PUT", body: JSON.stringify(input) }),
   deleteUser: (id: string) => request<void>(`/users/${id}`, { method: "DELETE" }),
+  listUserLogs: (userId: string, page: number, pageSize: number) =>
+    request<UserLogListResponse>(`/users/${userId}/logs?page=${page}&page_size=${pageSize}`),
 };

@@ -51,6 +51,9 @@ func main() {
 	userService := service.NewUserService(userRepo, eventBus, cfg.HMACSecret)
 	userHandler := handler.NewUserHandler(userService)
 
+	logService := service.NewLogService(logRepo)
+	logHandler := handler.NewLogHandler(logService)
+
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{cfg.FrontendOrigin},
@@ -75,6 +78,7 @@ func main() {
 	users.POST("", middleware.RequireAdmin(), userHandler.Create)
 	users.PUT("/:id", middleware.RequireAdmin(), userHandler.Update)
 	users.DELETE("/:id", middleware.RequireAdmin(), userHandler.Delete)
+	users.GET("/:id/logs", middleware.RequireAdmin(), logHandler.ListForUser)
 
 	log.Printf("listening on :%s", cfg.Port)
 	if err := router.Run(":" + cfg.Port); err != nil {

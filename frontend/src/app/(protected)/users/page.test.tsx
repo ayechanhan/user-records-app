@@ -20,6 +20,7 @@ jest.mock("@/lib/api", () => ({
     createUser: jest.fn(),
     updateUser: jest.fn(),
     deleteUser: jest.fn(),
+    listUserLogs: jest.fn(),
     logout: jest.fn(),
   },
 }));
@@ -64,6 +65,7 @@ test("renders fetched rows for an admin, including the actions column", async ()
   const rows = screen.getAllByRole("row");
   expect(within(rows[1]).getByRole("button", { name: /edit/i })).toBeInTheDocument();
   expect(within(rows[1]).getByRole("button", { name: /delete/i })).toBeInTheDocument();
+  expect(within(rows[1]).getByRole("button", { name: /logs/i })).toBeInTheDocument();
 });
 
 test("hides admin-only controls for a non-admin identity", async () => {
@@ -75,6 +77,7 @@ test("hides admin-only controls for a non-admin identity", async () => {
   expect(screen.queryByRole("button", { name: /new user/i })).not.toBeInTheDocument();
   expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
   expect(screen.queryByRole("button", { name: /delete/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: /logs/i })).not.toBeInTheDocument();
 });
 
 test("shows an empty state when there are no users", async () => {
@@ -120,6 +123,26 @@ test("admin can open the edit modal pre-filled for a row", async () => {
 
   expect(screen.getByRole("heading", { name: "Edit user" })).toBeInTheDocument();
   expect(screen.getByLabelText("Name")).toHaveValue("Ada Lovelace");
+});
+
+test("admin can open the log viewer for a row", async () => {
+  mockedApi.listUsers.mockResolvedValue({ users, total: 2, page: 1, page_size: 20 });
+  mockedApi.listUserLogs.mockResolvedValue({
+    logs: [{ user_id: "1", event: "user.created", data: {}, created_at: "2026-01-01T00:00:00Z" }],
+    total: 1,
+    page: 1,
+    page_size: 20,
+  });
+  const user = userEvent.setup();
+  renderAs(adminSession);
+
+  await screen.findByText("Ada Lovelace");
+  const rows = screen.getAllByRole("row");
+  await user.click(within(rows[1]).getByRole("button", { name: /logs/i }));
+
+  expect(screen.getByRole("heading", { name: "Log history" })).toBeInTheDocument();
+  expect(await screen.findByText("user.created")).toBeInTheDocument();
+  expect(mockedApi.listUserLogs).toHaveBeenCalledWith("1", 1, 20);
 });
 
 test("admin can open the delete confirmation for a row", async () => {
