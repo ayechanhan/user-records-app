@@ -33,12 +33,12 @@ Ordered checklist — each item is meant to be roughly one focused work session.
 
 ## Phase 4 — User CRUD API
 
-- [ ] `POST /users` — create, emit `user.created`
-- [ ] `GET /users` — paginated list
-- [ ] `GET /users/:id`
-- [ ] `PUT /users/:id` — update, emit `user.updated` with a diff in `data`
-- [ ] `DELETE /users/:id` — soft delete, emit `user.deleted`
-- [ ] Unit tests: happy path + validation errors + not-found for each handler
+- [x] `POST /users` — create, emit `user.created`
+- [x] `GET /users` — paginated list
+- [x] `GET /users/:id`
+- [x] `PUT /users/:id` — update, emit `user.updated` with a diff in `data`
+- [x] `DELETE /users/:id` — soft delete, emit `user.deleted`
+- [x] Unit tests: happy path + validation errors + not-found for each handler
 
 ## Phase 5 — Frontend auth
 

@@ -9,6 +9,7 @@ import (
 	"github.com/ayechanhan/user-records-app/backend/internal/config"
 	"github.com/ayechanhan/user-records-app/backend/internal/handler"
 	"github.com/ayechanhan/user-records-app/backend/internal/logging"
+	"github.com/ayechanhan/user-records-app/backend/internal/middleware"
 	"github.com/ayechanhan/user-records-app/backend/internal/repository/mongo"
 	"github.com/ayechanhan/user-records-app/backend/internal/repository/postgres"
 	"github.com/ayechanhan/user-records-app/backend/internal/service"
@@ -46,6 +47,9 @@ func main() {
 	authService := service.NewAuthService(userRepo, eventBus, cfg.HMACSecret, cfg.JWTSecret, cfg.AdminEmail, cfg.AdminPassword)
 	authHandler := handler.NewAuthHandler(authService)
 
+	userService := service.NewUserService(userRepo, eventBus, cfg.HMACSecret)
+	userHandler := handler.NewUserHandler(userService)
+
 	router := gin.Default()
 
 	router.GET("/healthz", func(c *gin.Context) {
@@ -54,6 +58,14 @@ func main() {
 
 	v1 := router.Group("/api/v1")
 	v1.POST("/auth/login", authHandler.Login)
+
+	users := v1.Group("/users")
+	users.Use(middleware.RequireAuth(cfg.JWTSecret))
+	users.GET("", userHandler.List)
+	users.GET("/:id", userHandler.Get)
+	users.POST("", middleware.RequireAdmin(), userHandler.Create)
+	users.PUT("/:id", middleware.RequireAdmin(), userHandler.Update)
+	users.DELETE("/:id", middleware.RequireAdmin(), userHandler.Delete)
 
 	log.Printf("listening on :%s", cfg.Port)
 	if err := router.Run(":" + cfg.Port); err != nil {

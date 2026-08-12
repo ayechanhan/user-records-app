@@ -14,24 +14,51 @@ import (
 	"github.com/ayechanhan/user-records-app/backend/internal/repository"
 )
 
-// mockUserRepo implements repository.UserRepository for tests that only
-// exercise the login path, i.e. GetByEmail.
+// mockUserRepo implements repository.UserRepository. Each method delegates
+// to an optional function field so individual tests only need to set up the
+// behavior they exercise; unset fields fall back to a harmless zero value.
 type mockUserRepo struct {
+	create     func(ctx context.Context, u *model.User) error
+	getByID    func(ctx context.Context, id uuid.UUID) (*model.User, error)
 	getByEmail func(ctx context.Context, email string) (*model.User, error)
+	list       func(ctx context.Context, limit, offset int) ([]model.User, int64, error)
+	update     func(ctx context.Context, u *model.User) error
+	delete     func(ctx context.Context, id uuid.UUID) error
 }
 
-func (m *mockUserRepo) Create(ctx context.Context, u *model.User) error { return nil }
+func (m *mockUserRepo) Create(ctx context.Context, u *model.User) error {
+	if m.create == nil {
+		return nil
+	}
+	return m.create(ctx, u)
+}
 func (m *mockUserRepo) GetByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
-	return nil, nil
+	if m.getByID == nil {
+		return nil, nil
+	}
+	return m.getByID(ctx, id)
 }
 func (m *mockUserRepo) GetByEmail(ctx context.Context, email string) (*model.User, error) {
 	return m.getByEmail(ctx, email)
 }
 func (m *mockUserRepo) List(ctx context.Context, limit, offset int) ([]model.User, int64, error) {
-	return nil, 0, nil
+	if m.list == nil {
+		return nil, 0, nil
+	}
+	return m.list(ctx, limit, offset)
 }
-func (m *mockUserRepo) Update(ctx context.Context, u *model.User) error { return nil }
-func (m *mockUserRepo) Delete(ctx context.Context, id uuid.UUID) error  { return nil }
+func (m *mockUserRepo) Update(ctx context.Context, u *model.User) error {
+	if m.update == nil {
+		return nil
+	}
+	return m.update(ctx, u)
+}
+func (m *mockUserRepo) Delete(ctx context.Context, id uuid.UUID) error {
+	if m.delete == nil {
+		return nil
+	}
+	return m.delete(ctx, id)
+}
 
 // mockEmitter implements EventEmitter, recording every event a test can
 // assert against instead of needing a real logging.Bus.
