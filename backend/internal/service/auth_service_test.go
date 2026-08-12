@@ -33,6 +33,22 @@ func (m *mockUserRepo) List(ctx context.Context, limit, offset int) ([]model.Use
 func (m *mockUserRepo) Update(ctx context.Context, u *model.User) error { return nil }
 func (m *mockUserRepo) Delete(ctx context.Context, id uuid.UUID) error  { return nil }
 
+// mockEmitter implements EventEmitter, recording every event a test can
+// assert against instead of needing a real logging.Bus.
+type mockEmitter struct {
+	events []emittedEvent
+}
+
+type emittedEvent struct {
+	userID string
+	event  model.LogEvent
+	data   map[string]any
+}
+
+func (m *mockEmitter) Emit(userID string, event model.LogEvent, data map[string]any) {
+	m.events = append(m.events, emittedEvent{userID, event, data})
+}
+
 const (
 	testHMACSecret    = "test-hmac-secret"
 	testJWTSecret     = "test-jwt-secret"
@@ -55,7 +71,8 @@ func newTestUser(t *testing.T, password string) *model.User {
 
 func TestAuthService_Login_AdminSuccess(t *testing.T) {
 	repo := &mockUserRepo{}
-	svc := NewAuthService(repo, testHMACSecret, testJWTSecret, testAdminEmail, testAdminPassword)
+	emitter := &mockEmitter{}
+	svc := NewAuthService(repo, emitter, testHMACSecret, testJWTSecret, testAdminEmail, testAdminPassword)
 
 	result, err := svc.Login(context.Background(), "Admin@Example.com", testAdminPassword)
 
@@ -68,15 +85,23 @@ func TestAuthService_Login_AdminSuccess(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, auth.RoleAdmin, claims.Role)
 	assert.Equal(t, "admin@example.com", claims.Email)
+
+	require.Len(t, emitter.events, 1)
+	assert.Equal(t, "admin", emitter.events[0].userID)
+	assert.Equal(t, model.EventUserLogin, emitter.events[0].event)
 }
 
 func TestAuthService_Login_AdminWrongPassword(t *testing.T) {
 	repo := &mockUserRepo{}
-	svc := NewAuthService(repo, testHMACSecret, testJWTSecret, testAdminEmail, testAdminPassword)
+	emitter := &mockEmitter{}
+	svc := NewAuthService(repo, emitter, testHMACSecret, testJWTSecret, testAdminEmail, testAdminPassword)
 
 	_, err := svc.Login(context.Background(), testAdminEmail, "wrong-password")
 
 	assert.ErrorIs(t, err, ErrInvalidCredentials)
+	require.Len(t, emitter.events, 1)
+	assert.Equal(t, "admin", emitter.events[0].userID)
+	assert.Equal(t, model.EventUserLoginFailed, emitter.events[0].event)
 }
 
 func TestAuthService_Login_UserSuccess(t *testing.T) {
@@ -87,7 +112,8 @@ func TestAuthService_Login_UserSuccess(t *testing.T) {
 			return user, nil
 		},
 	}
-	svc := NewAuthService(repo, testHMACSecret, testJWTSecret, testAdminEmail, testAdminPassword)
+	emitter := &mockEmitter{}
+	svc := NewAuthService(repo, emitter, testHMACSecret, testJWTSecret, testAdminEmail, testAdminPassword)
 
 	result, err := svc.Login(context.Background(), "Ada@Example.com", "correct-password")
 
@@ -95,6 +121,10 @@ func TestAuthService_Login_UserSuccess(t *testing.T) {
 	assert.Equal(t, auth.RoleUser, result.Role)
 	assert.Equal(t, user.ID.String(), result.ID)
 	require.NotEmpty(t, result.Token)
+
+	require.Len(t, emitter.events, 1)
+	assert.Equal(t, user.ID.String(), emitter.events[0].userID)
+	assert.Equal(t, model.EventUserLogin, emitter.events[0].event)
 }
 
 func TestAuthService_Login_UserWrongPassword(t *testing.T) {
@@ -104,11 +134,15 @@ func TestAuthService_Login_UserWrongPassword(t *testing.T) {
 			return user, nil
 		},
 	}
-	svc := NewAuthService(repo, testHMACSecret, testJWTSecret, testAdminEmail, testAdminPassword)
+	emitter := &mockEmitter{}
+	svc := NewAuthService(repo, emitter, testHMACSecret, testJWTSecret, testAdminEmail, testAdminPassword)
 
 	_, err := svc.Login(context.Background(), user.Email, "wrong-password")
 
 	assert.ErrorIs(t, err, ErrInvalidCredentials)
+	require.Len(t, emitter.events, 1)
+	assert.Equal(t, user.ID.String(), emitter.events[0].userID)
+	assert.Equal(t, model.EventUserLoginFailed, emitter.events[0].event)
 }
 
 func TestAuthService_Login_UnknownEmail(t *testing.T) {
@@ -117,11 +151,15 @@ func TestAuthService_Login_UnknownEmail(t *testing.T) {
 			return nil, repository.ErrNotFound
 		},
 	}
-	svc := NewAuthService(repo, testHMACSecret, testJWTSecret, testAdminEmail, testAdminPassword)
+	emitter := &mockEmitter{}
+	svc := NewAuthService(repo, emitter, testHMACSecret, testJWTSecret, testAdminEmail, testAdminPassword)
 
 	_, err := svc.Login(context.Background(), "nobody@example.com", "any-password")
 
 	assert.ErrorIs(t, err, ErrInvalidCredentials)
+	require.Len(t, emitter.events, 1)
+	assert.Equal(t, "", emitter.events[0].userID)
+	assert.Equal(t, model.EventUserLoginFailed, emitter.events[0].event)
 }
 
 func TestAuthService_Login_RepositoryError(t *testing.T) {
@@ -131,10 +169,12 @@ func TestAuthService_Login_RepositoryError(t *testing.T) {
 			return nil, repoErr
 		},
 	}
-	svc := NewAuthService(repo, testHMACSecret, testJWTSecret, testAdminEmail, testAdminPassword)
+	emitter := &mockEmitter{}
+	svc := NewAuthService(repo, emitter, testHMACSecret, testJWTSecret, testAdminEmail, testAdminPassword)
 
 	_, err := svc.Login(context.Background(), "ada@example.com", "any-password")
 
 	require.Error(t, err)
 	assert.NotErrorIs(t, err, ErrInvalidCredentials)
+	assert.Empty(t, emitter.events, "an infra error is not a login outcome and shouldn't be logged as one")
 }

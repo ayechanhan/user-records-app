@@ -26,10 +26,10 @@ Ordered checklist — each item is meant to be roughly one focused work session.
 
 ## Phase 3 — Async logging mechanism
 
-- [ ] `LogEvent` type + buffered channel
-- [ ] Background worker: drains channel → writes to Mongo
-- [ ] Non-blocking helper to emit events from handlers
-- [ ] Unit tests: event enqueued and consumed correctly, using a mocked writer
+- [x] `LogEvent` type + buffered channel
+- [x] Background worker: drains channel → writes to Mongo
+- [x] Non-blocking helper to emit events from handlers
+- [x] Unit tests: event enqueued and consumed correctly, using a mocked writer
 
 ## Phase 4 — User CRUD API
 

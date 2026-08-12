@@ -8,6 +8,7 @@ import (
 
 	"github.com/ayechanhan/user-records-app/backend/internal/config"
 	"github.com/ayechanhan/user-records-app/backend/internal/handler"
+	"github.com/ayechanhan/user-records-app/backend/internal/logging"
 	"github.com/ayechanhan/user-records-app/backend/internal/repository/mongo"
 	"github.com/ayechanhan/user-records-app/backend/internal/repository/postgres"
 	"github.com/ayechanhan/user-records-app/backend/internal/service"
@@ -36,8 +37,13 @@ func main() {
 	if err := mongo.EnsureIndexes(ctx, mongoClient, cfg.MongoDBName); err != nil {
 		log.Fatalf("mongo ensure indexes: %v", err)
 	}
+	logRepo := mongo.NewLogRepository(mongoClient, cfg.MongoDBName)
 
-	authService := service.NewAuthService(userRepo, cfg.HMACSecret, cfg.JWTSecret, cfg.AdminEmail, cfg.AdminPassword)
+	eventBus := logging.NewBus(logging.DefaultBufferSize)
+	logWorker := logging.NewWorker(eventBus, logRepo)
+	logWorker.Start()
+
+	authService := service.NewAuthService(userRepo, eventBus, cfg.HMACSecret, cfg.JWTSecret, cfg.AdminEmail, cfg.AdminPassword)
 	authHandler := handler.NewAuthHandler(authService)
 
 	router := gin.Default()
