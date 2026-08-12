@@ -12,9 +12,9 @@ Ordered checklist — each item is meant to be roughly one focused work session.
 
 ## Phase 1 — Data layer
 
-- [ ] Postgres migration for `users` (via golang-migrate or goose)
-- [ ] Mongo indexes for `user_logs` (on `user_id`, `event`, `created_at`)
-- [ ] `UserRepository` / `LogRepository` interfaces + Postgres/Mongo implementations
+- [x] Postgres migration for `users` (via golang-migrate or goose)
+- [x] Mongo indexes for `user_logs` (on `user_id`, `event`, `created_at`)
+- [x] `UserRepository` / `LogRepository` interfaces + Postgres/Mongo implementations
 
 ## Phase 2 — Auth
 
