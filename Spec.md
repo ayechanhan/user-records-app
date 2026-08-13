@@ -29,15 +29,16 @@ A user management system with an admin panel for creating, editing, and deleting
 
 ### Users (relational)
 
-| Field      | Type                | Notes                                 |
-| ---------- | ------------------- | ------------------------------------- |
-| id         | UUID                | primary key                           |
-| name       | string              | required                              |
-| email      | string              | required, unique                      |
-| password   | string              | HMAC hash — never returned by the API |
-| created_at | timestamp           |                                       |
-| updated_at | timestamp           |                                       |
-| deleted_at | timestamp, nullable | soft delete, see Assumptions          |
+| Field         | Type                | Notes                                                  |
+| ------------- | ------------------- | ------------------------------------------------------ |
+| id            | UUID                | primary key                                            |
+| name          | string              | required                                               |
+| email         | string              | required, unique (case-insensitive, active rows only)  |
+| password_hash | string              | HMAC hash — never returned by the API                  |
+| password_salt | string              | per-user random salt, see plan.md Key Decisions #1     |
+| created_at    | timestamp           |                                                         |
+| updated_at    | timestamp           |                                                         |
+| deleted_at    | timestamp, nullable | soft delete, see Assumptions                           |
 
 ### UserLogs (document store)
 

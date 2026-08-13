@@ -64,7 +64,7 @@ Ordered checklist — each item is meant to be roughly one focused work session.
 
 ## Phase 9 — Wrap-up
 
-- [ ] Update spec.md / plan.md to reflect what was actually built (spec drift check)
-- [ ] Final progress.md entries
-- [ ] Write README.md
+- [x] Update spec.md / plan.md to reflect what was actually built (spec drift check)
+- [x] Final progress.md entries
+- [x] Write README.md
 - [ ] Final commit, push after approval

@@ -64,13 +64,22 @@ user-records-app/
 │   ├── migrations/
 │   └── go.mod
 ├── frontend/
-│   ├── app/
-│   ├── components/
-│   └── lib/
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── login/            # login page
+│   │   │   └── (protected)/      # server-side auth-gated route group
+│   │   │       ├── layout.tsx    # redirects to /login if no session
+│   │   │       ├── session-provider.tsx
+│   │   │       └── users/        # data table + create/edit/delete/logs modals,
+│   │   │                         # colocated since nothing here is shared
+│   │   └── lib/                  # api.ts (client fetch), session.ts (server-side)
+│   └── package.json
 ├── docker-compose.yml
 ├── spec.md / plan.md / tasks.md / AGENTS.md / progress.md
 └── README.md              # written last
 ```
+
+No `components/` directory exists — nothing needed sharing across routes, so everything stayed colocated per the Next.js convention in this file's Conventions section.
 
 ## Key Decisions & Rationale
 
@@ -86,6 +95,7 @@ user-records-app/
 6. **Repository interfaces** for both stores — handlers/services depend on interfaces, not concrete drivers, so unit tests can mock the data layer instead of standing up real databases.
 7. **Case-insensitive email uniqueness** — normalize/lower-case on write and index accordingly, so `Name@x.com` and `name@x.com` can't both be created.
 8. **Two datastores, not one** — Users and UserLogs have different shapes and access patterns: Users is a small, fixed schema that needs strong consistency (unique email, atomic updates), while UserLogs is high-volume, append-only, and its `data` payload varies by event type. PostgreSQL fits the first; a document store fits the second without a migration every time a new event type's payload shape changes. A single Postgres instance with a JSONB log table would also work technically — but the requirements specify RDBMS for users and NoSQL for logs separately, so this isn't a preference to relax without changing scope.
+9. **CORS restricted to a single configured origin** (`FRONTEND_ORIGIN`, `AllowCredentials: true`) — added in Phase 5 once the frontend needed to call the API cross-origin in dev (`:3000` → `:8080`). A wildcard origin can't be combined with credentialed cookies per the CORS spec, so this had to be an explicit origin from day one, not a "tighten later" item.
 
 ## Future Improvements (explicitly not building now)
 
